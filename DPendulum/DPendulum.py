@@ -1,3 +1,4 @@
+# Reference: https://physicspython.wordpress.com/2019/06/20/double-pendulum-part-3/
 import matplotlib
 matplotlib.use('TkAgg') # 'tkAgg' if Qt not present 
 import matplotlib.pyplot as plt 
