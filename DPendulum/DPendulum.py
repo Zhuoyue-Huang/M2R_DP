@@ -1,10 +1,14 @@
-# Reference: https://physicspython.wordpress.com/2019/06/20/double-pendulum-part-3/
+# Animation Reference: https://physicspython.wordpress.com/2019/06/20/double-pendulum-part-3/
+# FFT Reference: https://pythonnumericalmethods.berkeley.edu/notebooks/chapter24.04-FFT-in-Python.html
 import matplotlib
 matplotlib.use('TkAgg') # 'tkAgg' if Qt not present 
-import matplotlib.pyplot as plt 
-from scipy.integrate import solve_ivp
-import numpy as np
+import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import numpy as np
+from scipy import pi
+from scipy.integrate import solve_ivp
+from scipy.fftpack import fft, ifft
+from scipy.signal import find_peaks, peak_prominences
   
 class Pendulum:
     def __init__(self, theta1, z1, theta2, z2, tmax, dt, y0, a1=1, a2=1, m1=1, m2=1):
@@ -37,6 +41,7 @@ class Pendulum:
         return np.array([[0.0, 0.0], [x1, y1], [x2, y2]])
       
     def evolve(self):
+        "Return the new Cartesian position after time dt."
         theta1, z1, theta2, z2 = self.y.sol(self.t)
         self.theta1 = theta1[self.ind]
         self.z1 = z1[self.ind]
@@ -46,6 +51,79 @@ class Pendulum:
         new_position = self.polar_to_cartesian()
         self.trajectory.append(new_position)
         return new_position
+
+    def fft(self):
+        "Return omega domain and the corresponding amplitude of theta1 and theta2."
+        t = self.t
+        sr = 1 / self.dt
+        theta1, z1, theta2, z2 = self.y.sol(t)
+        Theta1 = fft(theta1)
+        Theta2 = fft(theta2)
+        N = len(Theta1)
+        n = np.arange(N)
+        T = N/sr
+        omega = n/T * (2*pi)
+        # Get the one-sided specturm
+        n_oneside = N//2
+        # get the one side frequency
+        omega_oneside = omega[:n_oneside]
+        Theta1_oneside = Theta1[:n_oneside]
+        Theta2_oneside = Theta2[:n_oneside]
+        return (omega_oneside, np.abs(Theta1_oneside), np.abs(Theta2_oneside))
+
+    def fft_plot(self, show_peak=True, peak_num=2):
+        "Return 2*2 plots of time domain and omega domain in terms of theta1 and theta2."
+        t = self.t
+        theta1, z1, theta2, z2 = self.y.sol(t)
+        omega, Theta1, Theta2 = self.fft()
+        if show_peak:
+            omega1_pval, omega1_pind, omega2_pval, omega2_pind = self.find_peak(peak_num=peak_num)
+
+        plt.figure(figsize = (15, 9))
+        plt.subplot(221)
+        plt.plot(t, theta1)
+        plt.xlabel('Time (s)')
+        plt.ylabel(r'Amplitude of $\theta_1$')
+        plt.tight_layout()
+
+        plt.subplot(222)
+        if show_peak:
+            plt.scatter(omega1_pval, Theta1[omega1_pind], color="red", marker="x")
+            plt.legend(["Peak value"])
+        plt.plot(omega, Theta1)
+        plt.xlabel(r'Angular velocity of $\theta_1$')
+        plt.ylabel('Amplitude of the angular velocity')
+        plt.xlim(0, omega[-1])
+
+        plt.subplot(223)
+        plt.plot(t, theta2)
+        plt.xlabel('Time (s)')
+        plt.ylabel(r'Amplitude of $\theta_2$')
+        plt.tight_layout()
+
+        plt.subplot(224)
+        if show_peak:
+            plt.scatter(omega2_pval, Theta2[omega2_pind], color="red", marker="x")
+            plt.legend(["Peak value"])
+        plt.plot(omega, Theta2)
+        plt.xlabel(r'Angular velocity of $\theta_2$')
+        plt.ylabel('Amplitude of the angular velocity')
+        plt.xlim(0, omega[-1])
+        plt.show()
+
+    def find_peaks(self, peak_num=2):
+        "Return a tuple of two np arrays containing peak values of omega and its indices."
+        omega, Theta1, Theta2 = self.fft()
+        all_peak1 = find_peaks(Theta1)[0]
+        all_peak2 = find_peaks(Theta2)[0]
+        all_peak1_val = peak_prominences(Theta1, all_peak1)[0]
+        all_peak2_val = peak_prominences(Theta2, all_peak2)[0]
+        peak1_ind = np.argsort(all_peak1_val)[::-1][0:peak_num]
+        peak2_ind = np.argsort(all_peak2_val)[::-1][0:peak_num]
+        peak1 = all_peak1[peak1_ind]
+        peak2 = all_peak2[peak2_ind]
+        return (omega[peak1], peak1, omega[peak2], peak2)
+
 
 def deriv(t, y, a1, a2, m1, m2, g):
     """Return the first derivatives of y = theta1, z1, theta2, z2."""
