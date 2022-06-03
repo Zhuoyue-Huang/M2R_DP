@@ -77,7 +77,7 @@ class Pendulum:
         theta1, z1, theta2, z2 = self.y.sol(t)
         omega, Theta1, Theta2 = self.fft()
         if show_peak:
-            omega1_pval, omega1_pind, omega2_pval, omega2_pind = self.find_peak(peak_num=peak_num)
+            omega1_pval, omega1_pind, omega2_pval, omega2_pind = self.find_peaks(peak_num=peak_num)
 
         plt.figure(figsize = (15, 9))
         plt.subplot(221)
