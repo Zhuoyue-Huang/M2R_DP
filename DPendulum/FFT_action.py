@@ -3,12 +3,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import pi
 
-# FFT plot
+# FFT plot for small angle osillations
+y0 = [pi/12, 0, pi/12, 0]
+pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=200, dt=0.05, y0=y0)
+pendulum.fft_plot()
+
+# FFT plot for a periodic case
 y0 = [pi/12, 0, np.sqrt(2)*pi/12, 0]
 pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=100, dt=0.05, y0=y0)
 pendulum.fft_plot()
 
-# Reproduce theta plots using two dominant angular velocity
+# Reproduce theta plots for a periodic case
 t = pendulum.t
 theta1, z1, theta2, z2 = pendulum.y.sol(pendulum.t)
 omega1_pval, omega1_pind, omega2_pval, omega2_pind = pendulum.find_peaks()
