@@ -79,7 +79,7 @@ class Pendulum:
         if show_peak:
             omega1_pval, omega1_pind, omega2_pval, omega2_pind = self.find_peaks(peak_num=peak_num)
 
-        plt.figure(figsize = (15, 9))
+        plt.figure(figsize = (20, 12))
         plt.subplot(221)
         plt.plot(t, theta1)
         plt.xlabel('Time (s)')
@@ -89,8 +89,12 @@ class Pendulum:
         plt.subplot(222)
         if show_peak:
             plt.scatter(omega1_pval, Theta1[omega1_pind], color="red", marker="x")
-            plt.legend(["Peak value"])
         plt.plot(omega, Theta1)
+        if (self.m1, self.m2, self.a1, self.a2) == (1, 1, 1, 1):
+            plt.vlines((np.sqrt(self.g)*np.sqrt(2-np.sqrt(2)),
+                        np.sqrt(self.g)*np.sqrt(2+np.sqrt(2))),
+                       0, max(Theta1), colors="orange", linestyles="dashed", alpha=0.7)
+        plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"])
         plt.xlabel(r'Angular velocity of $\theta_1$')
         plt.ylabel('Amplitude of the angular velocity')
         plt.xlim(0, omega[-1])
@@ -104,8 +108,12 @@ class Pendulum:
         plt.subplot(224)
         if show_peak:
             plt.scatter(omega2_pval, Theta2[omega2_pind], color="red", marker="x")
-            plt.legend(["Peak value"])
         plt.plot(omega, Theta2)
+        if (self.m1, self.m2, self.a1, self.a2) == (1, 1, 1, 1):
+            plt.vlines((np.sqrt(self.g)*np.sqrt(2-np.sqrt(2)),
+                        np.sqrt(self.g)*np.sqrt(2+np.sqrt(2))),
+                       0, max(Theta2), colors="orange", linestyles="dashed", alpha=0.7)
+        plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"])
         plt.xlabel(r'Angular velocity of $\theta_2$')
         plt.ylabel('Amplitude of the angular velocity')
         plt.xlim(0, omega[-1])
