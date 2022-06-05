@@ -39,7 +39,7 @@ class Pendulum:
         if method == "Radau":
             self.full_sol = self.sol()
             self.theta1 = self.full_sol[0]
-            self.theta2 = self.full_sol()[1]
+            self.theta2 = self.full_sol()[2]
         
         elif method == 'RK23':
             self.full_sol = self.sol()
