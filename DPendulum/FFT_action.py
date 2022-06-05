@@ -1,4 +1,4 @@
-from DPendulum.DPendulum import Pendulum
+from DPendulum import Pendulum
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import pi
