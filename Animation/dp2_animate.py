@@ -23,14 +23,14 @@ def total_Energy(p1, p2, fr=None, start=False):
         return calc_E(p1.y0) + \
             calc_E(p2.y0)
     else:
-        return calc_E(p1.sol[fr]) + calc_E(p2.sol[fr])
+        return calc_E(p1.full_sol[fr]) + calc_E(p2.full_sol[fr])
 
 
 def animate(i, p1, p2, ln1, ln2, trace1, trace2, time_text, time_template,
             tr1_x, tr1_y, tr2_x, tr2_y):
     ln1.set_data([0, p1.x1[i], p1.x2[i]], [0, p1.y1[i], p1.y2[i]])
     ln2.set_data([0, p2.x1[i], p2.x2[i]], [0, p2.y1[i], p2.y2[i]])
-    
+
     # print(abs(total_Energy(p1, p2, fr=i) - start_energy))
 
     if p1.to_trace:
@@ -100,8 +100,8 @@ if __name__ == "__main__":
 
     y1 = [th1, 0, th2, 0]
     y2 = [th1+eps, 0, th2+eps, 0]
-    p1 = Pendulum(theta1=y1[0], z1=y1[1], theta2=y1[2], z2=y1[3], y0=y1, to_trace=False, trace_delete=False, tmax=100)
-    p2 = Pendulum(theta1=y2[0], z1=y2[1], theta2=y2[2], z2=y2[3], y0=y2, to_trace=False, trace_delete=False, tmax=100)
+    p1 = Pendulum(theta1=y1[0], z1=y1[1], theta2=y1[2], z2=y1[3], y0=y1, method='RK23', to_trace=False, trace_delete=False, tmax=200)
+    p2 = Pendulum(theta1=y2[0], z1=y2[1], theta2=y2[2], z2=y2[3], y0=y2, method='RK23', to_trace=False, trace_delete=False, tmax=200)
     start_energy = total_Energy(p1, p2, start = True) # noqa
     print(start_energy)
     # print(p1.num_frames)

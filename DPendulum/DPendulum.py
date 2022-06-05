@@ -10,7 +10,7 @@ from scipy.signal import find_peaks, peak_prominences
 
 class Pendulum:
     def __init__(self, theta1, z1, theta2, z2, tmax, y0, dt=0.05, L1=1, L2=1, m1=1, m2=1,
-                 to_trace=True, trace_delete=True, restart=None):
+                 to_trace=True, trace_delete=True, restart=None, method='Radau'):
         self.theta1 = theta1
         self.z1 = z1
         self.theta2 = theta2
@@ -26,16 +26,27 @@ class Pendulum:
         self.t = np.arange(0, tmax+dt, dt)
         self.ind = 0
         self.g = 9.81
+        self.method = method
 
         self.to_trace = to_trace
         self.trace_delete = trace_delete
         self.restart = restart
-        self.num_frames = 250
+        self.num_frames = int((50/3) * tmax) #250
 
         self.y0 = y0
         self.trajectory = [self.polar_to_cartesian()]
-        self.theta1 = self.sol()[0]
-        self.theta2 = self.sol()[2]
+
+        if method == "Radau":
+            self.full_sol = self.sol()
+            self.theta1 = self.full_sol[0]
+            self.theta2 = self.full_sol()[1]
+        
+        elif method == 'RK23':
+            self.full_sol = self.sol()
+            self.theta1 = self.full_sol[:, 0]
+            self.theta2 = self.full_sol[:, 2]
+
+        self.full_sol = self.full_sol
         self.x1 = self.L1 * np.sin(self.theta1)
         self.y1 = -self.L1 * np.cos(self.theta1)
         self.x2 = self.x1 + self.L2 * np.sin(self.theta2)
@@ -44,17 +55,28 @@ class Pendulum:
     def sol(self):
         "Return theta1, z1, theta2, z2 given the initial condition."
         if self.restart is None:
-            y = solve_ivp(deriv, (0, self.tmax), self.y0, method='Radau', dense_output=True,
-                        args=(self.L1, self.L2, self.m1, self.m2, self.g))
-            theta1, z1, theta2, z2 = y.sol(self.t)
-            return [theta1, z1, theta2, z2]
+            if self.method == "Radau":
+                y = solve_ivp(deriv, (0, self.tmax), self.y0, method='Radau', dense_output=True,
+                            args=(self.L1, self.L2, self.m1, self.m2, self.g))
+                theta1, z1, theta2, z2 = y.sol(self.t)
+                return [theta1, z1, theta2, z2]
+
+            elif self.method == "RK23":
+                y_full = solve_ivp(deriv, np.array((0, self.tmax + self.dt)), self.y0,
+                               t_eval=self.t, method='RK23',
+                               args=(self.L1, self.L2, self.m1, self.m2, self.g))
+                return (y_full.y).T
+
+            else:
+                raise NotImplementedError
+
         else:
             return self.iterative_solve()
 
     def iterative_solve(self):
         T = self.tmax + self.dt
         q, r = np.divmod(T, self.restart)
-        if r!=0:
+        if r != 0:
             dt = np.arange(0, r, self.dt)
             sol = solve_ivp(deriv, np.array((0, r)), self.y0, method='RK23', t_eval=dt,
                             args=(self.L1, self.L2, self.m1, self.m2))
@@ -63,11 +85,11 @@ class Pendulum:
         for _ in range(int(q)):
             try:
                 d_sol = solve_ivp(deriv, np.array((0, 1)), sol[-1], method='RK23',
-                                  t_eval=dt_1, args=(self.L1, self.L2, self.m1, self.m2))
+                                  t_eval=dt_1, args=(self.L1, self.L2, self.m1, self.m2, self.g))
                 sol = np.concatenate((sol, d_sol.y))
             except Exception:
                 d_sol = solve_ivp(deriv, np.array((0, 1)), self.y0, method='RK23',
-                                  t_eval=dt_1, args=(self.L1, self.L2, self.m1, self.m2))
+                                  t_eval=dt_1, args=(self.L1, self.L2, self.m1, self.m2, self.g))
                 sol = deepcopy(d_sol.y)
         theta1, z1, theta2, z2 = sol
         return [theta1, z1, theta2, z2]
