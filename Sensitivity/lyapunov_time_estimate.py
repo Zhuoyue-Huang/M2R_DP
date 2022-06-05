@@ -26,7 +26,7 @@ def principal(x):
 def pendulum_vec(v, t):  # v = (th1, th1_dot, th2, th2_dot)
     y0 = [principal(v[0]), v[1], principal(v[2]), v[3]]
     return Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], y0=y0,
-                    tmax=t, to_trace=False, trace_delete=False)
+                    tmax=t, to_trace=False, trace_delete=False, method='RK23')
 
 
 def initial_err_0(eps):
