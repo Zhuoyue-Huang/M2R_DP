@@ -11,7 +11,7 @@ from scipy.fftpack import fft, ifft
 from scipy.signal import find_peaks, peak_prominences
   
 class Pendulum:
-    def __init__(self, theta1, z1, theta2, z2, tmax, dt, y0, a1=1, a2=1, m1=1, m2=1):
+    def __init__(self, theta1, z1, theta2, z2, tmax, y0, dt=0.05, a1=1, a2=1, m1=1, m2=1):
         self.theta1 = theta1
         self.z1 = z1
         self.theta2 = theta2
@@ -32,6 +32,11 @@ class Pendulum:
         self.y0 = y0
         self.y = solve_ivp(deriv, (0, tmax), y0, method='Radau', dense_output=True,
               args=(self.a1, self.a2, self.m1, self.m2, self.g))
+
+    def sol(self):
+        "Return theta1, z1, theta2, z2 given the initial condition."
+        theta1, z1, theta2, z2 = self.y.sol(self.t)
+        return (theta1, z1, theta2, z2)
   
     def polar_to_cartesian(self):
         x1 = self.a1 * np.sin(self.theta1)        
@@ -42,7 +47,7 @@ class Pendulum:
       
     def evolve(self):
         "Return the new Cartesian position after time dt."
-        theta1, z1, theta2, z2 = self.y.sol(self.t)
+        theta1, z1, theta2, z2 = self.sol()
         self.theta1 = theta1[self.ind]
         self.z1 = z1[self.ind]
         self.theta2 = theta2[self.ind]
@@ -54,9 +59,8 @@ class Pendulum:
 
     def fft(self):
         "Return omega domain and the corresponding amplitude of theta1 and theta2."
-        t = self.t
         sr = 1 / self.dt
-        theta1, z1, theta2, z2 = self.y.sol(t)
+        theta1, z1, theta2, z2 = self.sol()
         Theta1 = fft(theta1)
         Theta2 = fft(theta2)
         N = len(Theta1)
@@ -74,7 +78,7 @@ class Pendulum:
     def fft_plot(self, show_peak=True, peak_num=2):
         "Return 2*2 plots of time domain and omega domain in terms of theta1 and theta2."
         t = self.t
-        theta1, z1, theta2, z2 = self.y.sol(t)
+        theta1, z1, theta2, z2 = self.sol()
         omega, Theta1, Theta2 = self.fft()
         if show_peak:
             omega1_pval, omega1_pind, omega2_pval, omega2_pind = self.find_peaks(peak_num=peak_num)
@@ -120,7 +124,7 @@ class Pendulum:
         plt.show()
 
     def find_peaks(self, peak_num=2):
-        "Return a tuple of two np arrays containing peak values of omega and its indices."
+        "Return peak values of omega and its indices for theta1 and theta2."
         omega, Theta1, Theta2 = self.fft()
         all_peak1 = find_peaks(Theta1)[0]
         all_peak2 = find_peaks(Theta2)[0]

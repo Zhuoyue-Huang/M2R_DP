@@ -15,7 +15,7 @@ pendulum.fft_plot()
 
 # Reproduce theta plots for a periodic case
 t = pendulum.t
-theta1, z1, theta2, z2 = pendulum.y.sol(pendulum.t)
+theta1, z1, theta2, z2 = pendulum.sol()
 omega1_pval, omega1_pind, omega2_pval, omega2_pind = pendulum.find_peaks()
 
 plt.figure(figsize = (15, 6))
