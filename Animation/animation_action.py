@@ -1,6 +1,5 @@
-from DPendulum.DPendulum import Pendulum, Animator
-import matplotlib
-matplotlib.use('TkAgg') # 'tkAgg' if Qt not present 
+from DPendulum import Pendulum
+from Animation import Animator
 import matplotlib.pyplot as plt 
 import scipy as sp
 
