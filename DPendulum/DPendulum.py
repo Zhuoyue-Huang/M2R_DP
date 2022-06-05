@@ -1,24 +1,23 @@
 # FFT Reference: https://pythonnumericalmethods.berkeley.edu/notebooks/chapter24.04-FFT-in-Python.html
-import matplotlib
-matplotlib.use('TkAgg') # 'tkAgg' if Qt not present 
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+from copy import deepcopy
 import numpy as np
 from scipy import pi
 from scipy.integrate import solve_ivp
 from scipy.fftpack import fft, ifft
 from scipy.signal import find_peaks, peak_prominences
 
- 
+
 class Pendulum:
-    def __init__(self, theta1, z1, theta2, z2, tmax, y0, dt=0.05, a1=1, a2=1, m1=1, m2=1):
+    def __init__(self, theta1, z1, theta2, z2, tmax, y0, dt=0.05, L1=1, L2=1, m1=1, m2=1,
+                 to_trace=True, trace_delete=True, restart=None):
         self.theta1 = theta1
         self.z1 = z1
         self.theta2 = theta2
         self.z2 = z2
 
-        self.a1 = a1
-        self.a2 = a2
+        self.L1 = L1
+        self.L2 = L2
         self.m1 = m1
         self.m2 = m2
 
@@ -27,23 +26,58 @@ class Pendulum:
         self.t = np.arange(0, tmax+dt, dt)
         self.ind = 0
         self.g = 9.81
-        self.trajectory = [self.polar_to_cartesian()]
+
+        self.to_trace = to_trace
+        self.trace_delete = trace_delete
+        self.restart = restart
+        self.num_frames = 250
 
         self.y0 = y0
-        self.y = solve_ivp(deriv, (0, tmax), y0, method='Radau', dense_output=True,
-              args=(self.a1, self.a2, self.m1, self.m2, self.g))
+        self.trajectory = [self.polar_to_cartesian()]
+        self.theta1 = self.sol()[0]
+        self.theta2 = self.sol()[2]
+        self.x1 = self.L1 * np.sin(self.theta1)
+        self.y1 = -self.L1 * np.cos(self.theta1)
+        self.x2 = self.x1 + self.L2 * np.sin(self.theta2)
+        self.y2 = self.y1 - self.L2 * np.cos(self.theta2)
 
     def sol(self):
         "Return theta1, z1, theta2, z2 given the initial condition."
-        theta1, z1, theta2, z2 = self.y.sol(self.t)
-        return (theta1, z1, theta2, z2)
+        if self.restart is None:
+            y = solve_ivp(deriv, (0, self.tmax), self.y0, method='Radau', dense_output=True,
+                        args=(self.L1, self.L2, self.m1, self.m2, self.g))
+            theta1, z1, theta2, z2 = y.sol(self.t)
+            return [theta1, z1, theta2, z2]
+        else:
+            return self.iterative_solve()
+
+    def iterative_solve(self):
+        T = self.tmax + self.dt
+        q, r = np.divmod(T, self.restart)
+        if r!=0:
+            dt = np.arange(0, r, self.dt)
+            sol = solve_ivp(deriv, np.array((0, r)), self.y0, method='RK23', t_eval=dt,
+                            args=(self.L1, self.L2, self.m1, self.m2))
+            sol = sol.y
+        dt_1 = np.arange(0, 1, self.dt)
+        for _ in range(int(q)):
+            try:
+                d_sol = solve_ivp(deriv, np.array((0, 1)), sol[-1], method='RK23',
+                                  t_eval=dt_1, args=(self.L1, self.L2, self.m1, self.m2))
+                sol = np.concatenate((sol, d_sol.y))
+            except Exception:
+                d_sol = solve_ivp(deriv, np.array((0, 1)), self.y0, method='RK23',
+                                  t_eval=dt_1, args=(self.L1, self.L2, self.m1, self.m2))
+                sol = deepcopy(d_sol.y)
+        theta1, z1, theta2, z2 = sol
+        return [theta1, z1, theta2, z2]
   
     def polar_to_cartesian(self):
-        x1 = self.a1 * np.sin(self.theta1)        
-        y1 = -self.a1 * np.cos(self.theta1)  
-        x2 = x1 + self.a2 * np.sin(self.theta2)
-        y2 = y1 - self.a2 * np.cos(self.theta2)
-        return np.array([[0.0, 0.0], [x1, y1], [x2, y2]])
+        self.x1 = self.L1 * np.sin(self.theta1)
+        self.y1 = -self.L1 * np.cos(self.theta1)
+        self.x2 = self.x1 + self.L2 * np.sin(self.theta2)
+        self.y2 = self.y1 - self.L2 * np.cos(self.theta2)
+        return np.array([[0.0, 0.0], [self.x1, self.y1], [self.x2, self.y2]])
       
     def evolve(self):
         "Return the new Cartesian position after time dt."
@@ -94,7 +128,7 @@ class Pendulum:
         if show_peak:
             plt.scatter(omega1_pval, Theta1[omega1_pind], color="red", marker="x")
         plt.plot(omega, Theta1)
-        if (self.m1, self.m2, self.a1, self.a2) == (1, 1, 1, 1):
+        if (self.m1, self.m2, self.L1, self.L2) == (1, 1, 1, 1):
             plt.vlines((np.sqrt(self.g)*np.sqrt(2-np.sqrt(2)),
                         np.sqrt(self.g)*np.sqrt(2+np.sqrt(2))),
                        0, max(Theta1), colors="orange", linestyles="dashed", alpha=0.7)
@@ -113,7 +147,7 @@ class Pendulum:
         if show_peak:
             plt.scatter(omega2_pval, Theta2[omega2_pind], color="red", marker="x")
         plt.plot(omega, Theta2)
-        if (self.m1, self.m2, self.a1, self.a2) == (1, 1, 1, 1):
+        if (self.m1, self.m2, self.L1, self.L2) == (1, 1, 1, 1):
             plt.vlines((np.sqrt(self.g)*np.sqrt(2-np.sqrt(2)),
                         np.sqrt(self.g)*np.sqrt(2+np.sqrt(2))),
                        0, max(Theta2), colors="orange", linestyles="dashed", alpha=0.7)
@@ -137,16 +171,16 @@ class Pendulum:
         return (omega[peak1], peak1, omega[peak2], peak2)
 
 
-def deriv(t, y, a1, a2, m1, m2, g):
+def deriv(t, y, L1, L2, m1, m2, g):
     """Return the first derivatives of y = theta1, z1, theta2, z2."""
     theta1, z1, theta2, z2 = y
 
     c, s = np.cos(theta1-theta2), np.sin(theta1-theta2)
 
     theta1dot = z1
-    z1dot = (m2*g*np.sin(theta2)*c - m2*s*(a1*z1**2*c + a2*z2**2) -
-            (m1+m2)*g*np.sin(theta1)) / a1 / (m1 + m2*s**2)
+    z1dot = (m2*g*np.sin(theta2)*c - m2*s*(L1*z1**2*c + L2*z2**2) -
+            (m1+m2)*g*np.sin(theta1)) / L1 / (m1 + m2*s**2)
     theta2dot = z2
-    z2dot = ((m1+m2)*(a1*z1**2*s - g*np.sin(theta2) + g*np.sin(theta1)*c) + 
-            m2*a2*z2**2*s*c) / a2 / (m1 + m2*s**2)
+    z2dot = ((m1+m2)*(L1*z1**2*s - g*np.sin(theta2) + g*np.sin(theta1)*c) + 
+            m2*L2*z2**2*s*c) / L2 / (m1 + m2*s**2)
     return theta1dot, z1dot, theta2dot, z2dot
