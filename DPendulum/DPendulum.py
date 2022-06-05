@@ -39,12 +39,12 @@ class Pendulum:
         if method == "Radau":
             self.full_sol = self.sol()
             self.theta1 = self.full_sol[0]
-            self.theta2 = self.full_sol()[2]
+            self.theta2 = self.full_sol[2]
         
         elif method == 'RK23':
             self.full_sol = self.sol()
-            self.theta1 = self.full_sol[:, 0]
-            self.theta2 = self.full_sol[:, 2]
+            self.theta1 = self.full_sol[0]
+            self.theta2 = self.full_sol[2]
 
         self.full_sol = self.full_sol
         self.x1 = self.L1 * np.sin(self.theta1)
@@ -60,16 +60,14 @@ class Pendulum:
                             args=(self.L1, self.L2, self.m1, self.m2, self.g))
                 theta1, z1, theta2, z2 = y.sol(self.t)
                 return [theta1, z1, theta2, z2]
-
             elif self.method == "RK23":
                 y_full = solve_ivp(deriv, np.array((0, self.tmax + self.dt)), self.y0,
                                t_eval=self.t, method='RK23',
                                args=(self.L1, self.L2, self.m1, self.m2, self.g))
-                return (y_full.y).T
-
+                theta1, z1, theta2, z2 = y_full.y
+                return [theta1, z1, theta2, z2]
             else:
                 raise NotImplementedError
-
         else:
             return self.iterative_solve()
 
