@@ -75,7 +75,7 @@ for th1 in tqdm(th1_range):
                 vals.append(float('inf'))
 
 points_th1, points_th2 = np.array(points_th1), np.array(points_th2)
-vals = t_conv(np.array(vals))
+vals = t_conv(np.array(vals, dt=p1.dt))
 # print(vals)
 
 
