@@ -6,15 +6,19 @@ from scipy import pi
 from scipy.integrate import solve_ivp
 from scipy.fftpack import fft, ifft
 from scipy.signal import find_peaks, peak_prominences
+from sympy import Matrix, Symbol
+from sympy.solvers.ode.systems import matrix_exp
 
 
 class Pendulum:
-    def __init__(self, theta1, z1, theta2, z2, tmax, y0, dt=0.05, L1=1, L2=1, m1=1, m2=1,
+    def __init__(self, tmax, y0, dt=0.05, L1=1, L2=1, m1=1, m2=1,
                  to_trace=True, trace_delete=True, restart=None, method='Radau'):
+        '''
         self.theta1 = theta1
         self.z1 = z1
         self.theta2 = theta2
         self.z2 = z2
+        '''
 
         self.L1 = L1
         self.L2 = L2
@@ -34,23 +38,27 @@ class Pendulum:
         self.num_frames = int((50/3) * tmax) #250
 
         self.y0 = y0
-        self.trajectory = [self.polar_to_cartesian()]
 
         if method == "Radau":
             self.full_sol = self.sol()
-            self.theta1 = self.full_sol[0]
-            self.theta2 = self.full_sol[2]
         
         elif method == 'RK23':
             self.full_sol = self.sol()
-            self.theta1 = self.full_sol[0]
-            self.theta2 = self.full_sol[2]
 
+        self.theta1 = self.full_sol[0]
+        self.z1 = self.full_sol[1]
+        self.theta2 = self.full_sol[2]
+        self.z2 = self.full_sol[3]
+
+        '''
         self.full_sol = self.full_sol
         self.x1 = self.L1 * np.sin(self.theta1)
         self.y1 = -self.L1 * np.cos(self.theta1)
         self.x2 = self.x1 + self.L2 * np.sin(self.theta2)
         self.y2 = self.y1 - self.L2 * np.cos(self.theta2)
+        '''
+        
+        self.trajectory = [self.polar_to_cartesian()]
 
     def sol(self):
         "Return theta1, z1, theta2, z2 given the initial condition."
@@ -97,8 +105,11 @@ class Pendulum:
         self.y1 = -self.L1 * np.cos(self.theta1)
         self.x2 = self.x1 + self.L2 * np.sin(self.theta2)
         self.y2 = self.y1 - self.L2 * np.cos(self.theta2)
-        return np.array([[0.0, 0.0], [self.x1, self.y1], [self.x2, self.y2]])
-      
+        return np.array([[self.x1, self.y1], [self.x2, self.y2]])
+        
+        # return np.array([[0.0, 0.0], [self.x1, self.y1], [self.x2, self.y2]])
+  
+
     def evolve(self):
         "Return the new Cartesian position after time dt."
         theta1, z1, theta2, z2 = self.sol()
@@ -190,6 +201,31 @@ class Pendulum:
         peak2 = all_peak2[peak2_ind]
         return (omega[peak1], peak1, omega[peak2], peak2)
 
+    def linearised_deriv(self): 
+        '''Return as theta1, theta2, theta1dot, theta2dot.'''
+        P = np.array([[(self.m1+self.m2)*self.L1**2, self.m2*self.L1*self.L2], 
+                       [self.m2*self.L1*self.L2, self.m2*self.L2**2]])
+        Q = - np.array([[(self.m1+self.m2)*self.g*self.L1, 0], 
+                        [0, self.m2*self.g*self.L2]])
+        A = np.matmul(np.linalg.inv(P), Q)
+        a = np.linalg.eig(A)
+        C = np.block([[np.zeros([2, 2]), np.identity(2)], [A, np.zeros([2, 2])]])
+        t = Symbol('t')
+        return (matrix_exp(Matrix(C), t)*
+                Matrix([self.y0[0], self.y0[2], self.y0[1], self.y0[3]]), 
+                np.imag(np.emath.sqrt(a[0][0])), 
+                np.imag(np.emath.sqrt(a[0][1])))
+    
+    def compare_lin_plot(self):
+        t = Symbol('t')
+        lin_deriv = self.linearised_deriv()[0]
+        plt.plot(self.t, self.theta1, color='red', label='theta1')
+        plt.plot(self.t, self.theta2, color='blue', label='theta2')
+        plt.plot(self.t, [lin_deriv[0].subs(t, r) for r in self.t], color='magenta', ls=':', label='theta1 linearised')
+        plt.plot(self.t, [lin_deriv[1].subs(t, r) for r in self.t], color='cyan', ls=':', label='theta2 linearised')
+        plt.xlabel("Time")
+        plt.legend()
+        plt.show()
 
 def deriv(t, y, L1, L2, m1, m2, g):
     """Return the first derivatives of y = theta1, z1, theta2, z2."""
@@ -204,3 +240,4 @@ def deriv(t, y, L1, L2, m1, m2, g):
     z2dot = ((m1+m2)*(L1*z1**2*s - g*np.sin(theta2) + g*np.sin(theta1)*c) + 
             m2*L2*z2**2*s*c) / L2 / (m1 + m2*s**2)
     return theta1dot, z1dot, theta2dot, z2dot
+
