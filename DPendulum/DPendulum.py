@@ -11,14 +11,12 @@ from sympy.solvers.ode.systems import matrix_exp
 
 
 class Pendulum:
-    def __init__(self, tmax, y0, dt=0.05, L1=1, L2=1, m1=1, m2=1,
+    def __init__(self, theta1, z1, theta2, z2, tmax, y0, dt=0.05, L1=1, L2=1, m1=1, m2=1,
                  to_trace=True, trace_delete=True, restart=None, method='Radau'):
-        '''
         self.theta1 = theta1
         self.z1 = z1
         self.theta2 = theta2
         self.z2 = z2
-        '''
 
         self.L1 = L1
         self.L2 = L2
@@ -38,27 +36,23 @@ class Pendulum:
         self.num_frames = int((50/3) * tmax) #250
 
         self.y0 = y0
+        self.trajectory = [self.polar_to_cartesian()]
 
         if method == "Radau":
             self.full_sol = self.sol()
+            self.theta1 = self.full_sol[0]
+            self.theta2 = self.full_sol[2]
         
         elif method == 'RK23':
             self.full_sol = self.sol()
+            self.theta1 = self.full_sol[0]
+            self.theta2 = self.full_sol[2]
 
-        self.theta1 = self.full_sol[0]
-        self.z1 = self.full_sol[1]
-        self.theta2 = self.full_sol[2]
-        self.z2 = self.full_sol[3]
-
-        '''
         self.full_sol = self.full_sol
         self.x1 = self.L1 * np.sin(self.theta1)
         self.y1 = -self.L1 * np.cos(self.theta1)
         self.x2 = self.x1 + self.L2 * np.sin(self.theta2)
         self.y2 = self.y1 - self.L2 * np.cos(self.theta2)
-        '''
-        
-        self.trajectory = [self.polar_to_cartesian()]
 
     def sol(self):
         "Return theta1, z1, theta2, z2 given the initial condition."
@@ -99,17 +93,16 @@ class Pendulum:
                 sol = deepcopy(d_sol.y)
         theta1, z1, theta2, z2 = sol
         return [theta1, z1, theta2, z2]
-  
+    
+    
     def polar_to_cartesian(self):
         self.x1 = self.L1 * np.sin(self.theta1)
         self.y1 = -self.L1 * np.cos(self.theta1)
         self.x2 = self.x1 + self.L2 * np.sin(self.theta2)
         self.y2 = self.y1 - self.L2 * np.cos(self.theta2)
-        return np.array([[self.x1, self.y1], [self.x2, self.y2]])
-        
-        # return np.array([[0.0, 0.0], [self.x1, self.y1], [self.x2, self.y2]])
+        return np.array([[0.0, 0.0], [self.x1, self.y1], [self.x2, self.y2]])
   
-
+    
     def evolve(self):
         "Return the new Cartesian position after time dt."
         theta1, z1, theta2, z2 = self.sol()
@@ -121,6 +114,7 @@ class Pendulum:
         new_position = self.polar_to_cartesian()
         self.trajectory.append(new_position)
         return new_position
+    
 
     def fft(self):
         "Return omega domain and the corresponding amplitude of theta1 and theta2."

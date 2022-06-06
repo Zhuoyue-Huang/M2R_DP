@@ -44,26 +44,24 @@ def plot_minus_jumps(y1, y2):
         plt.plot(separated_points[r][0], separated_points[r][1], color = 'b')
 
 
-# projection action
-y0 = [np.pi/3, 0, np.pi/3, np.pi/2]
-pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=50, dt=0.05, y0=y0)
-y = pendulum.sol()
-label = ['theta1', 'theta1dot', 'theta2', 'theta2dot']
+def twod_projection(*, y0 = np.array([np.pi/3, 0, np.pi/3, np.pi/2]), i=0, j=2):
+    pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=50, dt=0.05, y0=y0)
+    y = pendulum.sol()
+    label = ['theta1', 'theta1dot', 'theta2', 'theta2dot']
+    plt.figure(figsize=(15,5))
+    a = plt.subplot(1, 3, 1)
+    plt.subplots_adjust(wspace=0.5)
+    plt.plot(y[i], y[j])
+    plt.xlabel(label[i])
+    plt.ylabel(label[j])
+    b = plt.subplot(1, 3, 2)
+    plt.plot(s1(y[i]), s1(y[j]))
+    plt.xlabel(label[i])
+    plt.ylabel(label[j])
+    c = plt.subplot(1, 3, 3)
+    plot_minus_jumps(y[i], y[j])
+    plt.xlabel(label[i])
+    plt.ylabel(label[j])
+    plt.show()
 
-for i in range(4):
-    for j in range(4):
-        if i != j:
-            plt.figure(figsize=(15,5))
-            a = plt.subplot(1, 3, 1)
-            plt.subplots_adjust(wspace=0.5)
-            plt.plot(y[i], y[j])
-            plt.xlabel(label[i])
-            plt.ylabel(label[j])
-            b = plt.subplot(1, 3, 2)
-            plt.plot(s1(y[i]), s1(y[j]))
-            plt.xlabel(label[i])
-            plt.ylabel(label[j])
-            c = plt.subplot(1, 3, 3)
-            plot_minus_jumps(y[i], y[j])
-            plt.xlabel(label[i])
-            plt.ylabel(label[j])
+twod_projection()
