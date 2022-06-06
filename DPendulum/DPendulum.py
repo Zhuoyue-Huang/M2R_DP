@@ -6,6 +6,8 @@ from scipy import pi
 from scipy.integrate import solve_ivp
 from scipy.fftpack import fft, ifft
 from scipy.signal import find_peaks, peak_prominences
+from sympy import Matrix, Symbol
+from sympy.solvers.ode.systems import matrix_exp
 
 
 class Pendulum:
@@ -91,14 +93,16 @@ class Pendulum:
                 sol = deepcopy(d_sol.y)
         theta1, z1, theta2, z2 = sol
         return [theta1, z1, theta2, z2]
-  
+    
+    
     def polar_to_cartesian(self):
         self.x1 = self.L1 * np.sin(self.theta1)
         self.y1 = -self.L1 * np.cos(self.theta1)
         self.x2 = self.x1 + self.L2 * np.sin(self.theta2)
         self.y2 = self.y1 - self.L2 * np.cos(self.theta2)
         return np.array([[0.0, 0.0], [self.x1, self.y1], [self.x2, self.y2]])
-      
+  
+    
     def evolve(self):
         "Return the new Cartesian position after time dt."
         theta1, z1, theta2, z2 = self.sol()
@@ -110,6 +114,7 @@ class Pendulum:
         new_position = self.polar_to_cartesian()
         self.trajectory.append(new_position)
         return new_position
+    
 
     def fft(self):
         "Return omega domain and the corresponding amplitude of theta1 and theta2."
@@ -190,6 +195,31 @@ class Pendulum:
         peak2 = all_peak2[peak2_ind]
         return (omega[peak1], peak1, omega[peak2], peak2)
 
+    def linearised_deriv(self): 
+        '''Return as theta1, theta2, theta1dot, theta2dot.'''
+        P = np.array([[(self.m1+self.m2)*self.L1**2, self.m2*self.L1*self.L2], 
+                       [self.m2*self.L1*self.L2, self.m2*self.L2**2]])
+        Q = - np.array([[(self.m1+self.m2)*self.g*self.L1, 0], 
+                        [0, self.m2*self.g*self.L2]])
+        A = np.matmul(np.linalg.inv(P), Q)
+        a = np.linalg.eig(A)
+        C = np.block([[np.zeros([2, 2]), np.identity(2)], [A, np.zeros([2, 2])]])
+        t = Symbol('t')
+        return (matrix_exp(Matrix(C), t)*
+                Matrix([self.y0[0], self.y0[2], self.y0[1], self.y0[3]]), 
+                np.imag(np.emath.sqrt(a[0][0])), 
+                np.imag(np.emath.sqrt(a[0][1])))
+    
+    def compare_lin_plot(self):
+        t = Symbol('t')
+        lin_deriv = self.linearised_deriv()[0]
+        plt.plot(self.t, self.theta1, color='red', label='theta1')
+        plt.plot(self.t, self.theta2, color='blue', label='theta2')
+        plt.plot(self.t, [lin_deriv[0].subs(t, r) for r in self.t], color='magenta', ls=':', label='theta1 linearised')
+        plt.plot(self.t, [lin_deriv[1].subs(t, r) for r in self.t], color='cyan', ls=':', label='theta2 linearised')
+        plt.xlabel("Time")
+        plt.legend()
+        plt.show()
 
 def deriv(t, y, L1, L2, m1, m2, g):
     """Return the first derivatives of y = theta1, z1, theta2, z2."""
@@ -204,3 +234,4 @@ def deriv(t, y, L1, L2, m1, m2, g):
     z2dot = ((m1+m2)*(L1*z1**2*s - g*np.sin(theta2) + g*np.sin(theta1)*c) + 
             m2*L2*z2**2*s*c) / L2 / (m1 + m2*s**2)
     return theta1dot, z1dot, theta2dot, z2dot
+
