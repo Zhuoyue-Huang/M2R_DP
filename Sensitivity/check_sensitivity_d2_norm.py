@@ -64,7 +64,7 @@ for th1 in tqdm(th1_range):
         y1 = [th1, 0, th2, 0]
         y2 = [th1+delta, 0, th2+delta, 0]
         p1 = Pendulum(theta1=y1[0], z1=y1[1], theta2=y1[2], z2=y1[3], y0=y1, tmax=100 * time_unit)
-        p2 = Pendulum(theta1=y2[0], z1=y2[1], theta2=y2[2], z2=y2[3], y0=y1, tmax=100 * time_unit)
+        p2 = Pendulum(theta1=y2[0], z1=y2[1], theta2=y2[2], z2=y2[3], y0=y2, tmax=100 * time_unit)
         # print(p1.sol.shape[0])
         for s in range(len(p1.theta1)):
             if np.sqrt((p1.theta1[s] - p2.theta1[s])**2 +
