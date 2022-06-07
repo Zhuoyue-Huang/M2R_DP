@@ -38,15 +38,19 @@ class Pendulum:
         self.y0 = y0
         self.trajectory = [self.polar_to_cartesian()]
 
-        if method == "Radau":
-            self.full_sol = self.sol()
-            self.theta1 = self.full_sol[0]
-            self.theta2 = self.full_sol[2]
+        self.full_sol = self.sol()
+        self.theta1 = self.full_sol[0]
+        self.theta2 = self.full_sol[2]
+
+        # if method == "Radau":
+        #     self.full_sol = self.sol()
+        #     self.theta1 = self.full_sol[0]
+        #     self.theta2 = self.full_sol[2]
         
-        elif method == 'RK23':
-            self.full_sol = self.sol()
-            self.theta1 = self.full_sol[0]
-            self.theta2 = self.full_sol[2]
+        # elif method == 'RK23':
+        #     self.full_sol = self.sol()
+        #     self.theta1 = self.full_sol[0]
+        #     self.theta2 = self.full_sol[2]
 
         self.full_sol = self.full_sol
         self.x1 = self.L1 * np.sin(self.theta1)
