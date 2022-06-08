@@ -1,4 +1,5 @@
 # FFT Reference: https://pythonnumericalmethods.berkeley.edu/notebooks/chapter24.04-FFT-in-Python.html
+from turtle import color
 import matplotlib.pyplot as plt
 from copy import deepcopy
 import numpy as np
@@ -146,44 +147,48 @@ class Pendulum:
         if show_peak:
             omega1_pval, omega1_pind, omega2_pval, omega2_pind = self.find_peaks(peak_num=peak_num)
 
-        plt.figure(figsize = (20, 12))
-        plt.subplot(221)
-        plt.plot(t, theta1)
-        plt.xlabel('Time (s)')
-        plt.ylabel(r'Amplitude of $\theta_1$')
-        plt.tight_layout()
+        plt.figure(figsize = (15, 4))
+        plt.subplot(121)
+        plt.plot(t, theta1, linewidth=0.9, color="#0343DF")
+        plt.xlabel('Time (s)', fontsize=17)
+        plt.ylabel(r'Amplitude of $\theta_1$', fontsize=17)
 
-        plt.subplot(222)
+        plt.subplot(122)
         if show_peak:
-            plt.scatter(omega1_pval, Theta1[omega1_pind], color="red", marker="x")
-        plt.plot(omega, Theta1)
+            plt.scatter(omega1_pval, Theta1[omega1_pind], color="#00008B", marker="x")
+        plt.plot(omega, Theta1, linewidth=0.9, color="#0343DF")
         if (self.m1, self.m2, self.L1, self.L2) == (1, 1, 1, 1):
             plt.vlines((np.sqrt(self.g)*np.sqrt(2-np.sqrt(2)),
                         np.sqrt(self.g)*np.sqrt(2+np.sqrt(2))),
-                       0, max(Theta1), colors="orange", linestyles="dashed", alpha=0.7)
-        plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"])
-        plt.xlabel(r'Angular velocity of $\theta_1$')
-        plt.ylabel('Amplitude of the angular velocity')
+                       0, max(Theta1), colors="#7BC8F6", linestyles="dashed", alpha=0.8)
+        plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"], prop={'size': 13})
+        plt.xlabel(r'$\omega_1$ (m/s)', fontsize=17)
+        plt.ylabel(r'Amplitude of $\omega_1$', fontsize=17)
         plt.xlim(0, omega[-1])
-
-        plt.subplot(223)
-        plt.plot(t, theta2)
-        plt.xlabel('Time (s)')
-        plt.ylabel(r'Amplitude of $\theta_2$')
         plt.tight_layout()
+        plt.savefig("fft_11.pdf", format="pdf", bbox_inches="tight")
+        plt.show()
 
-        plt.subplot(224)
+        plt.figure(figsize = (15, 4))
+        plt.subplot(121)
+        plt.plot(t, theta2, linewidth=0.9, color="#0343DF")
+        plt.xlabel('Time (s)', fontsize=17)
+        plt.ylabel(r'Amplitude of $\theta_2$', fontsize=17)
+
+        plt.subplot(122)
         if show_peak:
-            plt.scatter(omega2_pval, Theta2[omega2_pind], color="red", marker="x")
-        plt.plot(omega, Theta2)
+            plt.scatter(omega2_pval, Theta2[omega2_pind], color="#00008B", marker="x")
+        plt.plot(omega, Theta2, linewidth=0.9, color="#0343DF")
         if (self.m1, self.m2, self.L1, self.L2) == (1, 1, 1, 1):
             plt.vlines((np.sqrt(self.g)*np.sqrt(2-np.sqrt(2)),
                         np.sqrt(self.g)*np.sqrt(2+np.sqrt(2))),
-                       0, max(Theta2), colors="orange", linestyles="dashed", alpha=0.7)
-        plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"])
-        plt.xlabel(r'Angular velocity of $\theta_2$')
-        plt.ylabel('Amplitude of the angular velocity')
+                       0, max(Theta2), colors="#7BC8F6", linestyles="dashed", alpha=0.8)
+        plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"], prop={'size': 13})
+        plt.xlabel(r'$\omega_2$ (m/s)', fontsize=17)
+        plt.ylabel(r'Amplitude of $\omega_2$', fontsize=17)
         plt.xlim(0, omega[-1])
+        plt.tight_layout()
+        plt.savefig("fft_12.pdf", format="pdf", bbox_inches="tight")
         plt.show()
 
     def find_peaks(self, peak_num=2):

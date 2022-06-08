@@ -4,13 +4,13 @@ import numpy as np
 from scipy import pi, fft
 
 # FFT plot for small angle osillations
-y0 = [pi/12, 0, pi/12, 0]
-pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=200, dt=0.05, y0=y0)
+y0 = [pi/12, 0, pi/15, 0]
+pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=200, dt=0.1, y0=y0)
 pendulum.fft_plot()
 
 # FFT plot for a periodic case
-y0 = [pi/12, 0, np.sqrt(2)*pi/12, 0]
-pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=100, dt=0.05, y0=y0)
+y0 = [pi/10, 0, np.sqrt(2)*pi/10, 0]
+pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=100, dt=0.1, y0=y0)
 pendulum.fft_plot()
 
 # Reproduce theta plots for a periodic case
@@ -82,4 +82,31 @@ plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velo
 plt.xlabel(r'Angular velocity of $\theta_2$')
 plt.ylabel('Amplitude of the angular velocity')
 plt.xlim(0, omega[-1])
+plt.show()
+
+# check sensitive dependence for theta is large
+tmax = 30
+y1 = [pi/2, 0, pi/4, 0]
+y2 = [pi/2, 0, pi/4-0.01, 0]
+p1 = Pendulum(theta1=y1[0], z1=y1[1], theta2=y1[2], z2=y1[3], tmax=tmax, dt=0.1, y0=y1)
+p2 = Pendulum(theta1=y2[0], z1=y2[1], theta2=y2[2], z2=y2[3], tmax=tmax, dt=0.1, y0=y2)
+theta11, z11, theta12, z12 = p1.sol()
+theta21, z21, theta22, z22 = p2.sol()
+omega1, Theta11, Theta12 = p1.fft()
+omega2, Theta21, Theta22 = p2.fft()
+plt.figure(figsize = (15, 4))
+plt.subplot(121)
+plt.plot(p1.t, theta12, linewidth=0.9, color="#7BC8F6")
+plt.plot(p1.t, theta22, linewidth=0.9, color="#00008B")
+plt.xlabel('Time (s)', fontsize=17)
+plt.ylabel(r'Amplitude of $\theta_2$', fontsize=17)
+plt.legend([r"$\theta_2$ ($y_1$)", r"$\theta_2$ ($y_2$)"], prop={'size': 13})
+plt.subplot(122)
+plt.plot(omega1, Theta12, linewidth=0.9, color="#7BC8F6")
+plt.plot(omega1, Theta22, linewidth=0.9, color="#00008B")
+plt.xlabel(r'$\omega_2$ (m/s)', fontsize=17)
+plt.ylabel(r'Amplitude of $\omega_2$', fontsize=17)
+plt.legend([r"spectrum of $\omega_2$ ($y_1$)", r"spectrum of $\omega_2$ ($y_2$)"], prop={'size': 13})
+plt.tight_layout()
+plt.savefig("fft_11.pdf", format="pdf", bbox_inches="tight")
 plt.show()
