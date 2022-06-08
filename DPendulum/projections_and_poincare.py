@@ -63,25 +63,6 @@ def twod_projection(*, y0 = np.array([np.pi/3, 0, np.pi/3, np.pi/2]), i=0, j=2):
     plt.ylabel(label[j])
     plt.show()
 
-def doublependpoincare(pendulum):
-    sol = pendulum.sol()
-    theta1 = s1(sol[0])
-    omega1 = sol[1]
-    theta2 = s1(sol[2])
-    omega2 = sol[3]
-    
-    theta_times = [[theta1[i], theta1[i + 1], i, i + 1] for i in range(len(theta1) - 1) \
-                   if (theta1[i] * theta1[i + 1] < 0 and abs(theta1[i]) < 1 and omega1[i] > 0)]
-    
-    interpolated_theta2 = []
-    interpolated_omega2 = []
-    
-    for m in theta_times:
-        interpolated_theta2.append((theta2[m[2]] * m[1] - theta2[m[3]] * m[0]) / (m[1] - m[0]))
-        interpolated_omega2.append((omega2[m[2]] * m[1] - omega2[m[3]] * m[0]) / (m[1] - m[0]))
-    plt.scatter(interpolated_theta2, interpolated_omega2, s=0.1)
-    plt.show()
-
 
 def poincare(pendulum, *, var=0, varpos=0):
     label = ['theta1', 'theta1dot', 'theta2', 'theta2dot']
