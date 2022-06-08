@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from DPendulum import Pendulum
 
-# functions needed for projection
 def s1(y):
     """Transform onto s1"""
     s1_y = []
@@ -64,4 +63,52 @@ def twod_projection(*, y0 = np.array([np.pi/3, 0, np.pi/3, np.pi/2]), i=0, j=2):
     plt.ylabel(label[j])
     plt.show()
 
-twod_projection()
+def poincare(pendulum, *, var=0, varpos=0):
+    label = ['theta1', 'theta1dot', 'theta2', 'theta2dot']
+    label.pop(var)
+    y = np.array(pendulum.sol())
+    indices = []
+    for i in range(len(y[var]) - 1):
+        if y[var][i] < varpos and y[var][i+1] > varpos:
+            indices.append(i)
+    y = y.T
+    points = []
+    if indices:
+        for i in indices:
+            x1, x2 = list(y[i]), list(y[i+1])
+            w1, w2 = x1.pop(var), x2.pop(var)
+            points.append([(x1[i]*w1 + x2[i]*w2)/(w1+w2) for i in range(3)])
+        print(points)
+        points = np.array(points).T
+        for i in range(3):
+            points[i] = s1(points[i])
+        fig = plt.figure()
+        ax = plt.axes(projection='3d')
+        ax.scatter3D(points[0], points[1], points[2])
+        ax.set_xlabel(label[0])
+        ax.set_ylabel(label[1])
+        ax.set_zlabel(label[2])
+        plt.show()
+
+        plt.figure(figsize=(15,5))
+        a = plt.subplot(1, 3, 1)
+        plt.subplots_adjust(wspace=0.5)
+        plt.scatter(points[0], points[1])
+        plt.xlabel(label[0])
+        plt.ylabel(label[1])
+        b = plt.subplot(1, 3, 2)
+        plt.scatter(points[0], points[2])
+        plt.xlabel(label[0])
+        plt.ylabel(label[2])
+        c = plt.subplot(1, 3, 3)
+        plt.scatter(points[1], points[2])
+        plt.xlabel(label[1])
+        plt.ylabel(label[2])
+        plt.show()
+    else:
+        print('No crosses')
+        return y
+
+y0 = [np.pi/30, 0, 0, 0]
+pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=10000, dt=0.05, y0=y0)
+poincare(pendulum)
