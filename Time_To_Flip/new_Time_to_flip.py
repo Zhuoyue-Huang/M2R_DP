@@ -50,7 +50,7 @@ def first_flip(theta1, theta2, max_units=100):
     return float('inf')
 
 
-delta = np.pi/60
+delta = np.pi / 100
 th1_range = np.arange(-np.pi, np.pi, delta)
 th2_range = np.arange(-np.pi, np.pi, delta)
 
@@ -64,7 +64,7 @@ for th1 in tqdm(th1_range):
         vals.append(first_flip(th1, th2, max_units=max_units))
 
 vals = t_conv(np.array(vals), dt=dt)
-# col = cat(vals)
+col = cat(vals)
 
 points_th1, points_th2 = np.array(points_th1), np.array(points_th2)
 
@@ -76,7 +76,7 @@ G = np.cos(TH2)
 
 
 fig, ax = plt.subplots()
-scatter = ax.scatter(points_th1, points_th2, c=col, s=20,
+scatter = ax.scatter(points_th1, points_th2, c=vals, cmap='viridis', s=10,
                      linewidth=0)
 cont = plt.contour(TH1, TH2, (F + G - 1), [0], colors='black')
 ax.set_xlabel('Theta 1')
@@ -84,7 +84,7 @@ ax.set_ylabel('Theta 2')
 ax.set_xlim([-np.pi, np.pi])
 ax.set_ylim([-np.pi, np.pi])
 ax.set_title("Time units it takes either pendulum to flip")
-# cbar = fig.colorbar(scatter)
-# cbar.ax.tick_params(labelsize=5)
-# cbar.set_label('number of time units', fontsize=6, rotation=270)
+cbar = fig.colorbar(scatter)
+cbar.ax.tick_params(labelsize=5)
+cbar.set_label('number of time units', fontsize=6, rotation=270)
 plt.show()
