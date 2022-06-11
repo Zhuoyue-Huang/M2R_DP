@@ -139,13 +139,13 @@ class Pendulum:
         Theta2_oneside = Theta2[:n_oneside]
         return (omega_oneside, np.abs(Theta1_oneside), np.abs(Theta2_oneside))
 
-    def fft_plot(self, show_peak=True, peak_num=2):
+    def fft_plot(self, show_peak=True, peak_num=2, setpeak=True, threshold=0):
         "Return 2*2 plots of time domain and omega domain in terms of theta1 and theta2."
         t = self.t
         theta1, z1, theta2, z2 = self.sol()
         omega, Theta1, Theta2 = self.fft()
         if show_peak:
-            omega1_pval, omega1_pind, omega2_pval, omega2_pind = self.find_peaks(peak_num=peak_num)
+            omega1_pval, omega1_pind, omega2_pval, omega2_pind = self.find_peaks(peak_num=peak_num, setpeak=setpeak, threshold=threshold)
 
         plt.figure(figsize = (15, 4))
         plt.subplot(121)
@@ -164,7 +164,7 @@ class Pendulum:
         plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"], prop={'size': 13})
         plt.xlabel(r'$\omega_1$ (m/s)', fontsize=17)
         plt.ylabel(r'Amplitude of $\omega_1$', fontsize=17)
-        plt.xlim(0, omega[-1])
+        plt.xlim(0, 30)
         plt.tight_layout()
         plt.savefig("fft_11.pdf", format="pdf", bbox_inches="tight")
         plt.show()
@@ -186,22 +186,26 @@ class Pendulum:
         plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"], prop={'size': 13})
         plt.xlabel(r'$\omega_2$ (m/s)', fontsize=17)
         plt.ylabel(r'Amplitude of $\omega_2$', fontsize=17)
-        plt.xlim(0, omega[-1])
+        plt.xlim(0, 30)
         plt.tight_layout()
         plt.savefig("fft_12.pdf", format="pdf", bbox_inches="tight")
         plt.show()
 
-    def find_peaks(self, peak_num=2):
+    def find_peaks(self, peak_num=2, setpeak=True, threshold=0):
         "Return peak values of omega and its indices for theta1 and theta2."
         omega, Theta1, Theta2 = self.fft()
-        all_peak1 = find_peaks(Theta1)[0]
-        all_peak2 = find_peaks(Theta2)[0]
+        all_peak1 = find_peaks(Theta1, threshold=threshold)[0]
+        all_peak2 = find_peaks(Theta2, threshold=threshold)[0]
         all_peak1_val = peak_prominences(Theta1, all_peak1)[0]
         all_peak2_val = peak_prominences(Theta2, all_peak2)[0]
-        peak1_ind = np.argsort(all_peak1_val)[::-1][0:peak_num]
-        peak2_ind = np.argsort(all_peak2_val)[::-1][0:peak_num]
-        peak1 = all_peak1[peak1_ind]
-        peak2 = all_peak2[peak2_ind]
+        if setpeak:
+            peak1_ind = np.argsort(all_peak1_val)[::-1][0:peak_num]
+            peak2_ind = np.argsort(all_peak2_val)[::-1][0:peak_num]
+            peak1 = all_peak1[peak1_ind]
+            peak2 = all_peak2[peak2_ind]
+        else:
+            peak1 = all_peak1
+            peak2 = all_peak2
         return (omega[peak1], peak1, omega[peak2], peak2)
 
     def linearised_deriv(self): 

@@ -1,7 +1,7 @@
 from DPendulum import Pendulum
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import pi, fft
+from scipy import pi
 
 # FFT plot for small angle osillations
 y0 = [pi/12, 0, pi/15, 0]
@@ -68,7 +68,7 @@ plt.plot(omega, Theta1)
 plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"])
 plt.xlabel(r'Angular velocity of $\theta_1$')
 plt.ylabel('Amplitude of the angular velocity')
-plt.xlim(0, omega[-1])
+plt.xlim(0, 30)
 
 plt.subplot(223)
 plt.plot(t, theta2)
@@ -81,7 +81,7 @@ plt.plot(omega, Theta2)
 plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"])
 plt.xlabel(r'Angular velocity of $\theta_2$')
 plt.ylabel('Amplitude of the angular velocity')
-plt.xlim(0, omega[-1])
+plt.xlim(0, 30)
 plt.show()
 
 # check sensitive dependence for theta is large
@@ -109,4 +109,33 @@ plt.ylabel(r'Amplitude of $\omega_2$', fontsize=17)
 plt.legend([r"spectrum of $\omega_2$ ($y_1$)", r"spectrum of $\omega_2$ ($y_2$)"], prop={'size': 13})
 plt.tight_layout()
 plt.savefig("fft_11.pdf", format="pdf", bbox_inches="tight")
+plt.show()
+
+# check the transition point 80 degree for symmetrical theta
+tmax = 100
+delta = 0
+y0 = [4*pi/9-delta, 0, 4*pi/9-delta, 0]
+p = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=tmax, dt=0.01, y0=y0)
+theta1, _, _, _ = p.sol()
+omega1, Theta1, _ = p.fft()
+omega1_pval, omega1_pind, _, _ = p.find_peaks(peak_num=21)
+
+plt.figure(figsize = (15, 4))
+plt.subplot(121)
+plt.plot(p.t, theta1, linewidth=0.9, color="#0343DF")
+plt.xlabel('Time (s)', fontsize=17)
+plt.ylabel(r'Amplitude of $\theta_1$', fontsize=17)
+
+plt.subplot(122)
+plt.scatter(omega1_pval, Theta1[omega1_pind], color="#00008B", marker="x")
+plt.plot(omega1, Theta1, linewidth=0.9, color="#0343DF")
+plt.vlines((np.sqrt(p.g)*np.sqrt(2-np.sqrt(2)), np.sqrt(p.g)*np.sqrt(2+np.sqrt(2))),
+            0, max(Theta1), colors="#7BC8F6", linestyles="dashed", alpha=0.8)
+plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"], prop={'size': 13})
+plt.xlabel(r'$\omega_1$ (m/s)', fontsize=17)
+plt.ylabel(r'Amplitude of $\omega_1$', fontsize=17)
+plt.xlim(0, 30)
+plt.suptitle(r"Initial condition $\theta_1=\theta_2=\frac{4}{9}\pi$", fontsize=20)
+plt.tight_layout()
+plt.savefig("fft_t7.pdf", format="pdf", bbox_inches="tight")
 plt.show()
