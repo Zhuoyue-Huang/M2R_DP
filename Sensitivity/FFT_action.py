@@ -2,6 +2,7 @@ from DPendulum import Pendulum
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import pi
+from scipy.fftpack import fft
 
 # FFT plot for small angle osillations
 y0 = [pi/12, 0, pi/15, 0]
