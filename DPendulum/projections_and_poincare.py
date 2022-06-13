@@ -43,10 +43,9 @@ def plot_minus_jumps(y1, y2):
         plt.plot(separated_points[r][0], separated_points[r][1], color = 'b')
 
 
-def twod_projection(*, y0 = np.array([np.pi/3, 0, np.pi/3, np.pi/2]), i=0, j=2):
-    pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=50, dt=0.05, y0=y0)
+def twod_projection(pendulum, *, i=0, j=2):
     y = pendulum.sol()
-    label = ['theta1', 'theta1dot', 'theta2', 'theta2dot']
+    label = [r'$\theta_1$', 'r$\omega_1$', 'theta2', 'theta2dot']
     plt.figure(figsize=(15,5))
     a = plt.subplot(1, 3, 1)
     plt.subplots_adjust(wspace=0.5)
@@ -64,52 +63,58 @@ def twod_projection(*, y0 = np.array([np.pi/3, 0, np.pi/3, np.pi/2]), i=0, j=2):
     plt.show()
 
 
-def poincare(pendulum, *, var=0, varpos=0):
-    label = ['theta1', 'theta1dot', 'theta2', 'theta2dot']
+def poincare(pendulum, *, var=0, varpos=0, s=True, time=0):
+    label = [r'$\theta_1$', r'$\dot{\theta_1}$', r'$\theta_2$', r'$\dot{\theta_2}$']
     label.pop(var)
     y = np.array(pendulum.sol())
     indices = []
     for i in range(len(y[var]) - 1):
         if y[var][i] < varpos and y[var][i+1] > varpos:
-                indices.append(i)
+            indices.append(i)
     y = y.T
     points = []
     if indices:
         for i in indices:
-            x1, x2 = s1(list(y[i])), s1(list(y[i+1]))
+            if s==True:
+                x1, x2 = s1(list(y[i])), s1(list(y[i+1]))
+            else:
+                x1, x2 = list(y[i]), list(y[i+1])
             w1, w2 = x1.pop(var), x2.pop(var)
             points.append([(x2[i]*w2 - x1[i]*w1)/(w2-w1) for i in range(3)])
         print(points)
         points = np.array(points).T
         for i in range(3):
-            points[i] = s1(points[i])
-        fig = plt.figure()
-        ax = plt.axes(projection='3d')
-        ax.scatter3D(points[0], points[1], points[2], s=0.5)
-        ax.set_xlabel(label[0])
-        ax.set_ylabel(label[1])
-        ax.set_zlabel(label[2])
-        plt.show()
+            if s==True:
+                points[i] = s1(points[i])
 
-        plt.figure(figsize=(15,5))
-        a = plt.subplot(1, 3, 1)
+
+        fig = plt.figure(figsize=(15,5))
+        a = plt.subplot(1, 3, 1, projection='3d')
         plt.subplots_adjust(wspace=0.5)
-        plt.scatter(points[0], points[1], s=0.5)
-        plt.xlabel(label[0])
-        plt.ylabel(label[1])
+        a.scatter3D(points[0], points[1], points[2], s=0.3, c="#00008B")
+        a.set_xlabel(label[0])
+        a.set_ylabel(label[1])
+        a.set_zlabel(label[2])
         b = plt.subplot(1, 3, 2)
-        plt.scatter(points[0], points[2], s=0.5)
-        plt.xlabel(label[0])
-        plt.ylabel(label[2])
+        b.scatter(points[0], points[2], s=0.3, c="#00008B")
+        b.set_xlabel(label[0], fontsize='12')
+        b.set_ylabel(label[2], fontsize='12')
         c = plt.subplot(1, 3, 3)
-        plt.scatter(points[1], points[2], s=0.5)
-        plt.xlabel(label[1])
-        plt.ylabel(label[2])
+        plt.scatter(points[1], points[2], s=0.5, c="#00008B")
+        plt.xlabel(label[1], fontsize='12')
+        plt.ylabel(label[2], fontsize='12')
+        fig.tight_layout
         plt.show()
     else:
         print('No crosses')
         return y
 
-y0 = [0.1, 0, 0, 0]
-pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=5000, dt=0.05, y0=y0)
+r = 3/2
+a = (r-1)**2
+b = r**2 - 6*r - 1
+c = -4*r
+m2 = (-b + np.sqrt(b**2 - 4*a*c))/2*a
+
+y0 = [np.pi/20, 0, 1.3*np.pi/20, 0]
+pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=5000, y0=y0)
 poincare(pendulum)
