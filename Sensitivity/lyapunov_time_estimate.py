@@ -30,7 +30,7 @@ def pendulum_vec(v, t):  # v = (th1, th1_dot, th2, th2_dot)
 
 
 def initial_err_0(eps):
-    return np.array([np.sqrt(eps / 4.0) for _ in range(4)])
+    return np.array([-np.sqrt(eps/4.0) for _ in range(4)])
 
 
 def lyp_exp(initial_cond, eps, tmax, T=1):
