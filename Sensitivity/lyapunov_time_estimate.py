@@ -52,14 +52,14 @@ def lyp_exp(initial_cond, eps, tmax, T=1):
         lyp_ests.append((1/T) * (np.log(err1_norm) - np.log(err0_norm)))
         err_0 = (err_1 / err1_norm) * eps  # scaled err_1
 
-        # print(calc_E(p1_state), "energy")
+        print(calc_E(p1_state), "energy")
         p1 = pendulum_vec(p1_state, T)
         p2 = pendulum_vec(p1_state + err_0, T)
     return sum(lyp_ests) / len(lyp_ests)
 
 
 if __name__ == "__main__":
-    initial_cond = np.array([np.pi/10, 0, np.pi/10, 0])
+    initial_cond = np.array([np.pi/3, 0, np.pi, 0])
     eps = 0.01
-    tmax = 100
+    tmax = 10000
     print(lyp_exp(initial_cond, eps, tmax, T=1))

@@ -51,8 +51,8 @@ def first_flip(theta1, theta2, max_units=100):
 
 
 delta = np.pi / 100
-th1_range = np.arange(-np.pi, np.pi, delta)
-th2_range = np.arange(-np.pi, np.pi, delta)
+th1_range = np.arange(1.1, 2.2, delta)
+th2_range = np.arange(0.75, 1.75, delta)
 
 
 points_th1, points_th2 = [], []
