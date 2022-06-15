@@ -38,8 +38,8 @@ def s1(y):
             v = v - 2*np.pi
         s1_y.append(v)
     return s1_y
-y0 = [pi, 10, pi, 10]
-pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=10, dt=0.01, y0=y0)
+y0 = [pi, 8, pi, 8]
+pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=100, dt=0.01, y0=y0)
 t = pendulum.t
 sr = 1 / pendulum.dt
 theta1, z1, theta2, z2 = pendulum.sol()
@@ -57,33 +57,21 @@ n_oneside = N//2
 omega = omega[:n_oneside]
 Theta1 = Theta1[:n_oneside]
 Theta2 = Theta2[:n_oneside]
-plt.figure(figsize = (20, 12))
-plt.subplot(221)
-plt.plot(t, theta1)
-plt.xlabel('Time (s)')
-plt.ylabel(r'Amplitude of $\theta_1$')
-plt.tight_layout()
+plt.figure(figsize = (15, 4))
+plt.subplot(121)
+plt.plot(t, theta1, color="#0343DF", linewidth=0.9)
+plt.xlabel('Time (s)', fontsize=17)
+plt.ylabel(r'Amplitude of $\theta_1$', fontsize=17)
 
-plt.subplot(222)
-plt.plot(omega, Theta1)
-plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"])
-plt.xlabel(r'Angular velocity of $\theta_1$')
-plt.ylabel('Amplitude of the angular velocity')
+plt.subplot(122)
+plt.plot(omega, Theta1, color="#0343DF", linewidth=0.9)
+plt.xlabel(r'$\omega_1$ (m/s)', fontsize=17)
+plt.ylabel('Amplitude of $\omega_1$', fontsize=17)
 plt.xlim(0, 30)
-
-plt.subplot(223)
-plt.plot(t, theta2)
-plt.xlabel('Time (s)')
-plt.ylabel(r'Amplitude of $\theta_2$')
 plt.tight_layout()
-
-plt.subplot(224)
-plt.plot(omega, Theta2)
-plt.legend(["Peak value", "Angular velocity spectrum", "Theoretical angular velocity"])
-plt.xlabel(r'Angular velocity of $\theta_2$')
-plt.ylabel('Amplitude of the angular velocity')
-plt.xlim(0, 30)
+plt.savefig("fft_52.pdf", format="pdf", bbox_inches="tight")
 plt.show()
+
 
 # check sensitive dependence for theta is large
 tmax = 30
