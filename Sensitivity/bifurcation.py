@@ -16,31 +16,11 @@ def wrapped(theta):
 
 dt = 0.01
 tmax = 100
-delta = pi / 60
-th_range = np.arange(0, pi+delta/2, delta)
-th1 = []
-dth1 = []
-
-from numpy import pi
-from tqdm import tqdm
-
-def wrapped(theta):
-    """Wrap angular displacement to obtain range of -pi to pi for infinite cylinder plot."""
-    theta_wrapped = [None] * len(theta)
-    for x in enumerate(theta):
-        if (x[1] % (2 * np.pi)) > np.pi:
-            theta_wrapped[x[0]] = x[1] % (2 * np.pi) -  2 * np.pi
-        else:
-            theta_wrapped[x[0]] = x[1] % (2 * np.pi)
-    return theta_wrapped
-
-dt = 0.01
-tmax = 100
 delta = pi / 360
 th_range = np.arange(0, pi+delta/2, delta)
 th1 = []
 dth1 = []
-t1 = []
+#t1 = []
 
 for i in tqdm(th_range):
     y0 = [i, 0, i, 0]
@@ -59,7 +39,7 @@ for i in tqdm(th_range):
     dth1 += z1_list
     #t1 += t_list
 
-plt.figure(figsize=(7,4))
+plt.figure(figsize=(7,6))
 #plt.vlines(60, -10, 10, colors="#7BC8F6", linestyles="dashed", alpha=1, linewidth=0.9)
 #plt.plot([0,180], [0, sqrt(9.81)*sqrt(2-sqrt(2))*np.tan(sqrt(9.81)*sqrt(2-sqrt(2))*0.5399102079395084)], color="#00008B")
 plt.scatter(th1, dth1, s=0.005, color="#0343DF")
