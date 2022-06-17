@@ -39,12 +39,12 @@ def s1(y):
         s1_y.append(v)
     return s1_y
 y0 = [pi, 8, pi, 8]
-pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=100, dt=0.01, y0=y0)
+pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=50, dt=0.01, y0=y0)
 t = pendulum.t
 sr = 1 / pendulum.dt
 theta1, z1, theta2, z2 = pendulum.sol()
-theta1 = s1(theta1)
-theta2 = s1(theta2)
+#theta1 = s1(theta1)
+#theta2 = s1(theta2)
 Theta1 = fft(theta1)
 Theta2 = fft(theta2)
 N = len(Theta1)
@@ -55,8 +55,8 @@ omega = n/T * (2*pi)
 n_oneside = N//2
 # get the one side frequency
 omega = omega[:n_oneside]
-Theta1 = Theta1[:n_oneside]
-Theta2 = Theta2[:n_oneside]
+Theta1 = np.abs(Theta1[:n_oneside])
+Theta2 = np.abs(Theta2[:n_oneside])
 plt.figure(figsize = (15, 4))
 plt.subplot(121)
 plt.plot(t, theta1, color="#0343DF", linewidth=0.9)
@@ -67,7 +67,7 @@ plt.subplot(122)
 plt.plot(omega, Theta1, color="#0343DF", linewidth=0.9)
 plt.xlabel(r'$\omega_1$ (m/s)', fontsize=17)
 plt.ylabel('Amplitude of $\omega_1$', fontsize=17)
-plt.xlim(0, 30)
+plt.xlim(0, omega[-1])
 plt.tight_layout()
 plt.savefig("fft_52.pdf", format="pdf", bbox_inches="tight")
 plt.show()
