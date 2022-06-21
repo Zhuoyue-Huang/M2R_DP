@@ -67,6 +67,8 @@ def poincare(pendulum, *, var=0, varpos=0, s=True, time=0):
     label = [r'$\theta_1$', r'$\dot{\theta_1}$', r'$\theta_2$', r'$\dot{\theta_2}$']
     label.pop(var)
     y = np.array(pendulum.sol())
+    y[0] = s1(y[0])
+    y[2] = s1(y[2])
     indices = []
     for i in range(len(y[var]) - 1):
         if y[var][i] < varpos and y[var][i+1] > varpos:
@@ -75,17 +77,11 @@ def poincare(pendulum, *, var=0, varpos=0, s=True, time=0):
     points = []
     if indices:
         for i in indices:
-            if s==True:
-                x1, x2 = s1(list(y[i])), s1(list(y[i+1]))
-            else:
-                x1, x2 = list(y[i]), list(y[i+1])
+            x1, x2 = list(y[i]), list(y[i+1])
             w1, w2 = x1.pop(var), x2.pop(var)
             points.append([(x2[i]*w2 - x1[i]*w1)/(w2-w1) for i in range(3)])
         print(points)
         points = np.array(points).T
-        for i in range(3):
-            if s==True:
-                points[i] = s1(points[i])
 
 
         fig = plt.figure(figsize=(15,5))
@@ -96,7 +92,7 @@ def poincare(pendulum, *, var=0, varpos=0, s=True, time=0):
         a.set_ylabel(label[1])
         a.set_zlabel(label[2])
         b = plt.subplot(1, 3, 2)
-        b.scatter(points[0], points[2], s=0.3, c="#00008B")
+        b.scatter(points[0], points[2], s=0.3, c="blue")
         b.set_xlabel(label[0], fontsize='12')
         b.set_ylabel(label[2], fontsize='12')
         c = plt.subplot(1, 3, 3)
@@ -109,12 +105,10 @@ def poincare(pendulum, *, var=0, varpos=0, s=True, time=0):
         print('No crosses')
         return y
 
-r = 3/2
-a = (r-1)**2
-b = r**2 - 6*r - 1
-c = -4*r
-m2 = (-b + np.sqrt(b**2 - 4*a*c))/2*a
+x = 4
+m2 = (1-x**2)**2 / (4*x**2)
 
-y0 = [np.pi/20, 0, 1.3*np.pi/20, 0]
-pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=5000, y0=y0)
+y0 = [0, 0, np.pi/100, 0]
+pendulum = Pendulum(theta1=y0[0], z1=y0[1], theta2=y0[2], z2=y0[3], tmax=300, 
+                    m2=m2, y0=y0)
 poincare(pendulum)
