@@ -59,7 +59,7 @@ def lyp_exp(initial_cond, eps, tmax, T=1):
 
 
 if __name__ == "__main__":
-    initial_cond = np.array([np.pi/10, 0, np.pi/10, 0])
+    initial_cond = np.array([np.pi/3, 0, np.pi, 0])
     eps = 0.01
-    tmax = 100
-    print(lyp_exp(initial_cond, eps, tmax, T=1))
+    tmax = 500
+    print(initial_cond, lyp_exp(initial_cond, eps, tmax, T=1))
